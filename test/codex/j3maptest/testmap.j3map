@@ -1,0 +1,9 @@
+
+// test array parsing
+myArray: Array<Boolean>[true, false, false, true];
+myMultiLineArray: Array<Boolean>[
+    true,
+    true,
+    false,
+    false,
+];
