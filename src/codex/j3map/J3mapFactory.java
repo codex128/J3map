@@ -173,7 +173,19 @@ public class J3mapFactory implements AssetLoader {
 		}
 		comment = false;
 	}
-	
+    /**
+     * Tests if the string follows the constructor protocol according to the given processor.
+     * @param str
+     * @param processor
+     * @return 
+     */
+	public static String getConstructorArguments(String str, J3mapPropertyProcessor processor) {
+        if (str.startsWith(processor.getPropertyIdentifier()+"(") && str.endsWith(")")) {
+            return str.substring(processor.getPropertyIdentifier().length()+1, str.length()-1);
+        }
+        else return null;
+    }
+    
 	private static String getNextLine(BufferedReader br) throws IOException {
 		String line = br.readLine();
 		if (line != null) return line.trim();
