@@ -62,6 +62,15 @@ public class J3mapFactory implements AssetLoader {
 		}
 	}
 	/**
+     * Register all assert processors with J3map.
+     * @param p 
+     */
+    public static void registerAllProcessors(J3mapPropertyProcessor... p) {
+        for (J3mapPropertyProcessor processor : p) {
+            registerProcessor(processor);
+        }
+    }
+    /**
 	 * Returns true if the provided class type is supported by J3map.
 	 * Includes custom processors.
 	 * @param classtype
