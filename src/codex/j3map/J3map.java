@@ -11,8 +11,9 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -30,8 +31,7 @@ public class J3map implements Cloneable {
 
     String src;
     String name;
-    HashMap<String, Property> properties = new HashMap<>();
-    LinkedList<Property> proplist = new LinkedList<>();
+    LinkedHashMap<String, Property> properties = new LinkedHashMap<>();
     J3map parent;
 
     public J3map() {
@@ -55,9 +55,8 @@ public class J3map implements Cloneable {
         this.name = name;
     }
 
-    private J3map(HashMap<String, Property> properties, LinkedList<Property> proplist) {
+    private J3map(HashMap<String, Property> properties) {
         this.properties.putAll(properties);
-        this.proplist.addAll(proplist);
     }
 
     // static methods
@@ -456,7 +455,6 @@ public class J3map implements Cloneable {
     public boolean store(String key, Object property) {
         Property p = new Property(key, property);
         if (properties.putIfAbsent(key, p) == null) {
-            proplist.addLast(p);
             if (property instanceof J3map) {
                 ((J3map) property).setParent(this);
             }
@@ -478,15 +476,11 @@ public class J3map implements Cloneable {
         Property prev = properties.get(key);
         Property np = new Property(key, property);
         properties.put(key, np);
-        proplist.addLast(np);
-        if (prev != null) {
-            proplist.remove(prev);
-            if (prev.property instanceof J3map) {
-                ((J3map) prev.property).setParent(null);
-            }
+        if (prev != null && prev.property instanceof J3map) {
+            ((J3map) prev.property).setParent(null);
         }
         if (property instanceof J3map) {
-            ((J3map) property).setParent(this);
+            ((J3map)property).setParent(this);
         }
         return prev;
     }
@@ -500,7 +494,6 @@ public class J3map implements Cloneable {
     public Object delete(String key) {
         Property remove = properties.remove(key);
         if (remove != null) {
-            proplist.remove(remove);
             if (remove.property instanceof J3map) {
                 ((J3map) remove.property).setParent(null);
             }
@@ -528,7 +521,6 @@ public class J3map implements Cloneable {
             property.setParent(null);
         });
         properties.clear();
-        proplist.clear();
     }
 
     // property testing
@@ -782,8 +774,8 @@ public class J3map implements Cloneable {
      *
      * @return
      */
-    public LinkedList<Property> getOrderedPropertyList() {
-        return proplist;
+    public Collection<Property> getOrderedPropertyList() {
+        return properties.values();
     }
 
     /**
@@ -818,7 +810,7 @@ public class J3map implements Cloneable {
     public <T> void forEachType(Class<T> classtype, BiConsumer<String, T> foreach) {
         properties.forEach((key, property) -> {
             if (classtype.isAssignableFrom(property.property.getClass())) {
-                foreach.accept(key, (T) property);
+                foreach.accept(key, (T)property.property);
             }
         });
     }
@@ -830,7 +822,7 @@ public class J3map implements Cloneable {
      * @param foreach
      */
     public void forEach(Consumer<Object> foreach) {
-        proplist.forEach(foreach);
+        properties.values().forEach(foreach);
     }
 
     /**
@@ -842,7 +834,7 @@ public class J3map implements Cloneable {
      * @param foreach
      */
     public <T> void forEachType(Class<T> classtype, Consumer<T> foreach) {
-        for (Property property : proplist) {
+        for (Property property : properties.values()) {
             if (classtype.isAssignableFrom(property.property.getClass())) {
                 foreach.accept((T) property.property);
             }
@@ -928,7 +920,7 @@ public class J3map implements Cloneable {
      */
     @Override
     public J3map clone() {
-        return new J3map(properties, proplist);
+        return new J3map(properties);
     }
 
     @Override
@@ -967,7 +959,7 @@ public class J3map implements Cloneable {
     }
 
     private void writeProperties(FileWriter writer, String tabs) {
-        for (Property property : proplist) {
+        for (Property property : properties.values()) {
             try {
                 writeProperty(property, writer, tabs);
             } catch (IOException ex) {
@@ -998,7 +990,7 @@ public class J3map implements Cloneable {
                     writer.write(str + (++index == out.length ? ";" : "") + "\n");
                 }
                 if (out.length == 0) {
-                    throw new NullPointerException("Processor must export data");
+                    throw new NullPointerException("Processor must export data!");
                 }
             }
             else {
@@ -1006,12 +998,12 @@ public class J3map implements Cloneable {
             }
             return;
         }
-        if (property.property instanceof ArrayWrapper) {
-            ArrayWrapper array = (ArrayWrapper) property.property;
-            if (array.getArray().length > 0) {
-                J3mapPropertyProcessor jpp = J3mapFactory.pmap.get(LOG);
-            }
-        }
+//        if (property.property instanceof ArrayWrapper) {
+//            ArrayWrapper array = (ArrayWrapper) property.property;
+//            if (array.getArray().length > 0) {
+//                J3mapPropertyProcessor jpp = J3mapFactory.pmap.get(LOG);
+//            }
+//        }
         System.out.println("property type: " + property.property);
         writer.write("// [ERROR]: unsupported (key:" + property.key + ") "
                 + "(type:" + property.property.getClass().getName() + ")\n");
