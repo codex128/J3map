@@ -7,7 +7,7 @@ File format similar to JSON for JMonkeyEngine3.
 
 # Usage
 Initialize J3map parsing.
-```
+```java
 // register J3mapFactory as an asset loader
 assetManager.registerLoader(J3mapFactory.class, "j3map");
 // register property processors, which help J3mapFactory parse individual properties
@@ -18,14 +18,14 @@ J3mapFactory.registerAllProcessors(
     /* etc... */);
 ```
 Load and read a j3map file.
-```
+```java
 J3map file = (J3map)assetManager.loadAsset("MyFile.j3map");
 boolean a = file.getBoolean("myBoolean", true); // fetch boolean property named "myBoolean", if not found, return true by default.
 String str = file.getString("myString"); // fetch String property named "myString", returns null by default.
 MyClass c = file.getProperty(MyClass.class, "somedata"); // fetch MyClass property named "somedata", returns null by default.
 ```
 Write to and save a j3map.
-```
+```java
 J3map file = ...;
 file.store("myInteger", 5); // stores the int 5 at "myInteger", unless "myInteger" already exists.
 file.overwrite("myFloat", 0.25f); // stores the float 0.25f at "myFloat", if "myFloat" already exists, this method will overwrite it.
@@ -37,7 +37,7 @@ catch (IOException ex) { /* ... */ }
 ```
 # File Syntax
 A typical j3map file looks like this:
-```
+```java
 myString: "hello world";
 myBoolean: false;
 myInteger: 5;
@@ -49,7 +49,7 @@ Spaces and tabs are optional. Number type must be easily identifiable, for insta
 
 Notice `myFloat` is enclosed between a set of curly-braces labeled as `myMap`. `myMap` *is* a J3map, stored inside another J3map.
 This is how `myFloat` is accessed:
-```
+```java
 J3map file = ...;
 J3map myMap = file.getJ3map("myMap");
 Float f = myMap.getFloat("myFloat");
